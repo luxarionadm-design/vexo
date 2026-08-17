@@ -26,6 +26,14 @@ export class FormHandler {
         this.#bindEvents();
         this.#loadRememberState();
         authManager.addListener(this.#boundHandlers.onAuthChange);
+        
+        // Debug: log initialization
+        console.log('[FormHandler] Initialized');
+        console.log('[FormHandler] Elements:', {
+            forgotLink: !!elements.forgotLink,
+            signupLink: !!elements.signupLink,
+            form: !!elements.form,
+        });
     }
 
     #initHandlers() {
@@ -57,26 +65,78 @@ export class FormHandler {
         const el = this.#elements;
         const handlers = this.#boundHandlers;
 
-        el.form.addEventListener('submit', handlers.handleSubmit);
-        el.signinBtn.addEventListener('click', handlers.handleSubmit);
-        el.rememberMe.addEventListener('change', handlers.handleRememberChange);
-        el.forgotLink.addEventListener('click', handlers.handleForgotPassword);
-        el.signupLink.addEventListener('click', handlers.handleSignUp);
+        // Form submit
+        if (el.form) {
+            el.form.addEventListener('submit', handlers.handleSubmit);
+        }
+
+        // Sign in button
+        if (el.signinBtn) {
+            el.signinBtn.addEventListener('click', handlers.handleSubmit);
+        }
+
+        // Remember me
+        if (el.rememberMe) {
+            el.rememberMe.addEventListener('change', handlers.handleRememberChange);
+        }
+
+        // FORGOT PASSWORD - Mobile friendly (click + touchstart)
+        if (el.forgotLink) {
+            el.forgotLink.addEventListener('click', handlers.handleForgotPassword);
+            el.forgotLink.addEventListener('touchstart', handlers.handleForgotPassword, { passive: true });
+            // Debug: log when link is clicked
+            el.forgotLink.addEventListener('click', () => {
+                console.log('[FormHandler] Forgot link clicked (click event)');
+            });
+            el.forgotLink.addEventListener('touchstart', () => {
+                console.log('[FormHandler] Forgot link clicked (touchstart event)');
+            });
+        }
+
+        // SIGN UP - Mobile friendly (click + touchstart)
+        if (el.signupLink) {
+            el.signupLink.addEventListener('click', handlers.handleSignUp);
+            el.signupLink.addEventListener('touchstart', handlers.handleSignUp, { passive: true });
+            // Debug: log when link is clicked
+            el.signupLink.addEventListener('click', () => {
+                console.log('[FormHandler] Signup link clicked (click event)');
+            });
+            el.signupLink.addEventListener('touchstart', () => {
+                console.log('[FormHandler] Signup link clicked (touchstart event)');
+            });
+        }
+
+        // Keyboard
         document.addEventListener('keydown', handlers.handleKeyboard);
 
-        this.#listeners = [
-            { element: el.form, type: 'submit', handler: handlers.handleSubmit },
-            { element: el.signinBtn, type: 'click', handler: handlers.handleSubmit },
-            { element: el.rememberMe, type: 'change', handler: handlers.handleRememberChange },
-            { element: el.forgotLink, type: 'click', handler: handlers.handleForgotPassword },
-            { element: el.signupLink, type: 'click', handler: handlers.handleSignUp },
-            { element: document, type: 'keydown', handler: handlers.handleKeyboard }
-        ];
+        // Store listeners for cleanup
+        this.#listeners = [];
+        
+        if (el.form) {
+            this.#listeners.push({ element: el.form, type: 'submit', handler: handlers.handleSubmit });
+        }
+        if (el.signinBtn) {
+            this.#listeners.push({ element: el.signinBtn, type: 'click', handler: handlers.handleSubmit });
+        }
+        if (el.rememberMe) {
+            this.#listeners.push({ element: el.rememberMe, type: 'change', handler: handlers.handleRememberChange });
+        }
+        if (el.forgotLink) {
+            this.#listeners.push({ element: el.forgotLink, type: 'click', handler: handlers.handleForgotPassword });
+            this.#listeners.push({ element: el.forgotLink, type: 'touchstart', handler: handlers.handleForgotPassword });
+        }
+        if (el.signupLink) {
+            this.#listeners.push({ element: el.signupLink, type: 'click', handler: handlers.handleSignUp });
+            this.#listeners.push({ element: el.signupLink, type: 'touchstart', handler: handlers.handleSignUp });
+        }
+        this.#listeners.push({ element: document, type: 'keydown', handler: handlers.handleKeyboard });
     }
 
     #unbindEvents() {
         this.#listeners.forEach(({ element, type, handler }) => {
-            element.removeEventListener(type, handler);
+            if (element) {
+                element.removeEventListener(type, handler);
+            }
         });
     }
 
@@ -84,12 +144,45 @@ export class FormHandler {
 
     async #handleForgotPassword(e) {
         e.preventDefault();
-        await ForgotPasswordModal.open();
+        e.stopPropagation();
+        
+        console.log('[FormHandler] #handleForgotPassword called');
+        
+        // Check if ModalManager is available
+        if (typeof ForgotPasswordModal === 'undefined' || !ForgotPasswordModal.open) {
+            console.error('[FormHandler] ForgotPasswordModal not available');
+            ToastManager.error('Modal system not ready. Please refresh.');
+            return;
+        }
+
+        try {
+            await ForgotPasswordModal.open();
+            console.log('[FormHandler] ForgotPasswordModal opened successfully');
+        } catch (error) {
+            console.error('[FormHandler] ForgotPasswordModal error:', error);
+            ToastManager.error('Failed to open reset password modal');
+        }
     }
 
     async #handleSignUp(e) {
         e.preventDefault();
-        await SignUpModal.open();
+        e.stopPropagation();
+        
+        console.log('[FormHandler] #handleSignUp called');
+        
+        if (typeof SignUpModal === 'undefined' || !SignUpModal.open) {
+            console.error('[FormHandler] SignUpModal not available');
+            ToastManager.error('Modal system not ready. Please refresh.');
+            return;
+        }
+
+        try {
+            await SignUpModal.open();
+            console.log('[FormHandler] SignUpModal opened successfully');
+        } catch (error) {
+            console.error('[FormHandler] SignUpModal error:', error);
+            ToastManager.error('Failed to open sign up modal');
+        }
     }
 
     #handleRememberChange(e) {
@@ -98,7 +191,9 @@ export class FormHandler {
 
     #loadRememberState() {
         const checked = loadRememberState();
-        this.#elements.rememberMe.checked = checked;
+        if (this.#elements.rememberMe) {
+            this.#elements.rememberMe.checked = checked;
+        }
     }
 }
 
