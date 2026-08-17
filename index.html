@@ -6,7 +6,6 @@
     <title>Vexorion · Login</title>
     <link rel="stylesheet" href="css/style.css">
     <style>
-        /* Style login */
         body {
             background: #0a0a0a;
             display: flex;
@@ -15,6 +14,7 @@
             min-height: 100vh;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             margin: 0;
+            padding: 20px;
         }
         .login-container {
             background: #151515;
@@ -52,6 +52,7 @@
             border-radius: 4px;
             color: #fff;
             font-size: 14px;
+            box-sizing: border-box;
         }
         .form-group input:focus {
             outline: none;
@@ -63,6 +64,8 @@
             align-items: center;
             margin: 16px 0;
             font-size: 13px;
+            flex-wrap: wrap;
+            gap: 8px;
         }
         .remember-forgot label {
             color: #999;
@@ -71,8 +74,13 @@
         .remember-forgot a {
             color: #f5c842;
             text-decoration: none;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: background 0.2s;
         }
         .remember-forgot a:hover {
+            background: rgba(245, 200, 66, 0.1);
             text-decoration: underline;
         }
         .btn-primary {
@@ -103,8 +111,13 @@
         .signup-link a {
             color: #f5c842;
             text-decoration: none;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: background 0.2s;
         }
         .signup-link a:hover {
+            background: rgba(245, 200, 66, 0.1);
             text-decoration: underline;
         }
         .demo-hint {
@@ -144,20 +157,146 @@
                 <label>
                     <input type="checkbox" id="rememberCheck"> Remember me
                 </label>
-                <a href="#" id="forgotLink">Forgot password?</a>
+                <a href="#" onclick="openForgotModal(); return false;">Forgot password?</a>
             </div>
             
             <button type="submit" class="btn-primary" id="signinBtn">Sign in</button>
         </form>
         
         <div class="signup-link">
-            Don't have an account? <a href="#" id="signupLink">Create one</a>
+            Don't have an account? <a href="#" onclick="openSignupModal(); return false;">Create one</a>
         </div>
         
         <div class="demo-hint">
             Press <kbd>Ctrl</kbd> + <kbd>D</kbd> to load demo credentials
         </div>
     </div>
+
+    <script>
+        function openForgotModal() {
+            console.log('[Modal] Forgot password clicked!');
+            if (typeof window.ModalManager === 'undefined') {
+                alert('Modal system loading... Please click again in 2 seconds.');
+                return;
+            }
+            const content = `
+                <div style="margin-bottom:16px;color:#999;">
+                    Enter your email address and we'll send you a link to reset your password.
+                </div>
+                <input type="email" id="resetEmail" placeholder="Enter your email" 
+                       style="width:100%;padding:10px;margin-bottom:12px;box-sizing:border-box;
+                       border:1px solid #333;background:#1a1a1a;color:#fff;border-radius:4px;" />
+                <button onclick="sendResetLink()" 
+                        style="width:100%;padding:12px;background:#f5c842;
+                        border:none;border-radius:4px;color:#000;font-weight:bold;cursor:pointer;">
+                    Send Reset Link
+                </button>
+            `;
+            try {
+                window.ModalManager.create('forgotPassword', 'Reset Password', content);
+                window.ModalManager.open('forgotPassword');
+                console.log('[Modal] Forgot modal opened!');
+            } catch (error) {
+                console.error('[Modal] Error:', error);
+                alert('Error opening modal: ' + error.message);
+            }
+        }
+
+        function sendResetLink() {
+            const email = document.getElementById('resetEmail');
+            if (!email || !email.value.trim()) {
+                alert('Please enter your email');
+                return;
+            }
+            alert('✅ Reset link sent to ' + email.value.trim());
+            window.ModalManager.close('forgotPassword');
+        }
+
+        function openSignupModal() {
+            console.log('[Modal] Signup clicked!');
+            if (typeof window.ModalManager === 'undefined') {
+                alert('Modal system loading... Please click again in 2 seconds.');
+                return;
+            }
+            const content = `
+                <div style="margin-bottom:16px;color:#999;">
+                    Create your Vexorion account and start streaming.
+                </div>
+                <input type="text" id="signupName" placeholder="Full name" 
+                       style="width:100%;padding:10px;margin-bottom:12px;box-sizing:border-box;
+                       border:1px solid #333;background:#1a1a1a;color:#fff;border-radius:4px;" />
+                <input type="email" id="signupEmail" placeholder="Email address" 
+                       style="width:100%;padding:10px;margin-bottom:12px;box-sizing:border-box;
+                       border:1px solid #333;background:#1a1a1a;color:#fff;border-radius:4px;" />
+                <input type="password" id="signupPassword" placeholder="Password (min 6 characters)" 
+                       style="width:100%;padding:10px;margin-bottom:12px;box-sizing:border-box;
+                       border:1px solid #333;background:#1a1a1a;color:#fff;border-radius:4px;" />
+                <button onclick="submitSignup()" 
+                        style="width:100%;padding:12px;background:#f5c842;
+                        border:none;border-radius:4px;color:#000;font-weight:bold;cursor:pointer;">
+                    Create Account
+                </button>
+            `;
+            try {
+                window.ModalManager.create('signup', 'Create Account', content);
+                window.ModalManager.open('signup');
+                console.log('[Modal] Signup modal opened!');
+            } catch (error) {
+                console.error('[Modal] Error:', error);
+                alert('Error opening modal: ' + error.message);
+            }
+        }
+
+        function submitSignup() {
+            const name = document.getElementById('signupName');
+            const email = document.getElementById('signupEmail');
+            const password = document.getElementById('signupPassword');
+            if (!name || !email || !password) {
+                alert('Please fill in all fields');
+                return;
+            }
+            const nameValue = name.value.trim();
+            const emailValue = email.value.trim();
+            const passwordValue = password.value;
+            if (!nameValue || !emailValue || !passwordValue) {
+                alert('Please fill in all fields');
+                return;
+            }
+            if (passwordValue.length < 6) {
+                alert('Password must be at least 6 characters');
+                password.focus();
+                return;
+            }
+            try {
+                const users = JSON.parse(localStorage.getItem('vexor_users') || '[]');
+                users.push({ name: nameValue, email: emailValue, password: passwordValue });
+                localStorage.setItem('vexor_users', JSON.stringify(users));
+            } catch (e) {
+                console.warn('Could not save user:', e);
+            }
+            alert('✅ Account created for ' + emailValue + '! Welcome ' + nameValue + '!');
+            window.ModalManager.close('signup');
+            const emailInput = document.getElementById('emailInput');
+            if (emailInput) {
+                emailInput.value = emailValue;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('[Index] Page loaded, waiting for ModalManager...');
+            let checkCount = 0;
+            const checkModal = setInterval(function() {
+                checkCount++;
+                if (typeof window.ModalManager !== 'undefined') {
+                    console.log('[Index] ✅ ModalManager loaded!');
+                    clearInterval(checkModal);
+                } else if (checkCount > 20) {
+                    console.warn('[Index] ⚠️ ModalManager not loaded after 10 seconds');
+                    clearInterval(checkModal);
+                }
+            }, 500);
+        });
+    </script>
 
     <script type="module" src="src/Vexor.js"></script>
 </body>
