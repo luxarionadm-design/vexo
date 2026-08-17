@@ -4,41 +4,65 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Vexorion · Login</title>
+    
+    <!-- CSS -->
     <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/login.css" />
+    
+    <!-- Import Map -->
+    <script type="importmap">
+    {
+        "imports": {
+            "vexor": "./src/Vexor.js",
+            "vexor/modules/": "./src/js/modules/"
+        }
+    }
+    </script>
 </head>
 <body>
 
-    <div class="login-container">
-        <h1>🎬 Vexorion</h1>
-        <p class="subtitle">Sign in to your account</p>
-
-        <form id="loginForm">
-            <div class="form-group">
-                <label for="emailInput">Email address</label>
-                <input type="email" id="emailInput" placeholder="you@example.com" required />
+    <div id="app">
+        <div class="login-container">
+            <div class="login-header">
+                <h1>🎬 Vexorion</h1>
+                <p class="subtitle">Sign in to your account</p>
             </div>
 
-            <div class="form-group">
-                <label for="passwordInput">Password</label>
-                <input type="password" id="passwordInput" placeholder="Enter your password" required />
+            <form id="loginForm" class="login-form">
+                <div class="form-group">
+                    <label for="emailInput">Email address</label>
+                    <input type="email" id="emailInput" placeholder="you@example.com" required autofocus />
+                </div>
+
+                <div class="form-group">
+                    <label for="passwordInput">Password</label>
+                    <input type="password" id="passwordInput" placeholder="Enter your password" required />
+                </div>
+
+                <div class="form-options">
+                    <label class="remember-me">
+                        <input type="checkbox" id="rememberCheck" />
+                        <span>Remember me</span>
+                    </label>
+                    <a href="#" id="forgotLink" class="forgot-link">Forgot password?</a>
+                </div>
+
+                <button type="submit" class="Button primary" id="signinBtn">Sign in</button>
+            </form>
+
+            <div class="signup-section">
+                <p>Don't have an account? <a href="#" id="signupLink">Create one</a></p>
             </div>
-
-            <div class="remember-forgot">
-                <label>
-                    <input type="checkbox" id="rememberCheck" /> Remember me
-                </label>
-                <a href="#" id="forgotLink">Forgot password?</a>
-            </div>
-
-            <button type="submit" class="btn-primary" id="signinBtn">Sign in</button>
-        </form>
-
-        <div class="signup-link">
-            Don't have an account? <a href="#" id="signupLink">Create one</a>
         </div>
     </div>
 
-    <script type="module" src="src/Vexor.js"></script>
+    <!-- Main Script -->
+    <script type="module">
+        import { VexorApp } from 'vexor';
+        
+        const app = new VexorApp();
+        app.init();
+    </script>
 
 </body>
 </html>
