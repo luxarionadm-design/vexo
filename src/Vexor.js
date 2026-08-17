@@ -1,68 +1,26 @@
-/**
- * VexorApp - Main entry point
- * @singleton
- */
 import { modalManager } from './js/modules/ModalManager.js';
 import { toastManager } from './js/modules/ToastManager.js';
 import { authManager } from './js/modules/AuthManager.js';
 import { createFormHandler } from './js/modules/formhandler/index.js';
 
-class VexorApp {
-    static #instance = null;
+export class VexorApp {
     #elements = {};
     #formHandler = null;
     #initialized = false;
-    #initPromise = null;
 
     constructor() {
-        if (VexorApp.#instance) {
-            return VexorApp.#instance;
-        }
-        VexorApp.#instance = this;
+        // Minimal setup di constructor
     }
 
-    static getInstance() {
-        if (!VexorApp.#instance) {
-            VexorApp.#instance = new VexorApp();
-        }
-        return VexorApp.#instance;
-    }
-
-    async init() {
-        if (this.#initialized) {
-            return this.#initPromise;
-        }
-
-        if (this.#initPromise) {
-            return this.#initPromise;
-        }
-
-        this.#initPromise = this.#initialize();
-        return this.#initPromise;
-    }
-
-    async #initialize() {
-        try {
-            this.#cacheElements();
-            await this.#loadInitialState();
-            this.#setupFormHandler();
-            this.#setupGlobalListeners();
-            
-            this.#initialized = true;
-            this.#log('Vexorion App initialized');
-            
-            // Expose ModalManager ke window untuk HTML onclick
-            window.ModalManager = modalManager;
-            window.ToastManager = toastManager;
-            window.AuthManager = authManager;
-            console.log('[Vexorion] ✅ ModalManager exposed to window!');
-            
-            return true;
-        } catch (error) {
-            console.error('[Vexorion] Init failed:', error);
-            toastManager.error('Failed to initialize app. Please refresh.');
-            throw error;
-        }
+    // ===== PUBLIC API =====
+    init() {
+        if (this.#initialized) return;
+        this.#cacheElements();
+        this.#loadInitialState();
+        this.#setupFormHandler();
+        this.#setupGlobalListeners();
+        this.#initialized = true;
+        console.log('[Vexorion] App initialized');
     }
 
     destroy() {
@@ -72,26 +30,13 @@ class VexorApp {
         }
         this.#removeGlobalListeners();
         this.#initialized = false;
-        this.#log('Vexorion App destroyed');
-    }
-
-    restart() {
-        this.destroy();
-        return this.init();
     }
 
     getElements() {
         return { ...this.#elements };
     }
 
-    getState() {
-        return {
-            initialized: this.#initialized,
-            elements: Object.keys(this.#elements).filter(key => this.#elements[key]),
-            formHandler: !!this.#formHandler,
-        };
-    }
-
+    // ===== PRIVATE METHODS =====
     #cacheElements() {
         this.#elements = {
             form: document.getElementById('loginForm'),
@@ -103,75 +48,32 @@ class VexorApp {
             signupLink: document.getElementById('signupLink'),
             container: document.querySelector('.login-container')
         };
-
-        const missing = Object.entries(this.#elements)
-            .filter(([key, value]) => !value)
-            .map(([key]) => key);
-
-        if (missing.length > 0) {
-            console.warn(`[Vexorion] Missing elements: ${missing.join(', ')}`);
-        }
     }
 
-    async #loadInitialState() {
-        try {
-            const isAuthenticated = await authManager.checkAuth();
-            const state = authManager.getState();
-            
-            if (isAuthenticated && state.user) {
-                const emailInput = this.#elements.email;
-                if (emailInput) {
-                    emailInput.value = state.user.email || '';
-                }
-                toastManager.success(`Welcome back, ${state.user.name || state.user.email}!`);
-                
-                if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
-                    this.#redirectToDashboard();
-                }
-            }
-        } catch (error) {
-            console.error('[Vexorion] Load initialState error:', error);
+    #loadInitialState() {
+        const state = authManager.getState();
+        if (state.isLoggedIn && state.user) {
+            this.#elements.email.value = state.user.email || '';
+            toastManager.success(`Welcome back, ${state.user.name || state.user.email}!`);
+            this.#redirectToDashboard();
         }
     }
 
     #setupFormHandler() {
-        if (this.#elements.form) {
-            this.#formHandler = createFormHandler(this.#elements);
-        } else {
-            console.error('[Vexorion] Form element not found, cannot setup FormHandler');
-        }
+        this.#formHandler = createFormHandler(this.#elements);
     }
 
     #setupGlobalListeners() {
-        this.#networkOnlineHandler = () => {
+        window.addEventListener('online', () => {
             toastManager.success('Back online!');
-        };
-        this.#networkOfflineHandler = () => {
+        });
+        window.addEventListener('offline', () => {
             toastManager.error('You are offline. Please check your connection.');
-        };
-
-        window.addEventListener('online', this.#networkOnlineHandler);
-        window.addEventListener('offline', this.#networkOfflineHandler);
-
-        this.#unhandledRejectionHandler = (event) => {
-            console.error('[Vexorion] Unhandled Promise Rejection:', event.reason);
-            toastManager.error('An unexpected error occurred. Please try again.');
-        };
-        window.addEventListener('unhandledrejection', this.#unhandledRejectionHandler);
-
-        this.#visibilityHandler = () => {
-            if (document.hidden) {
-                this.#log('Page hidden');
-            }
-        };
-        document.addEventListener('visibilitychange', this.#visibilityHandler);
+        });
     }
 
     #removeGlobalListeners() {
-        window.removeEventListener('online', this.#networkOnlineHandler);
-        window.removeEventListener('offline', this.#networkOfflineHandler);
-        window.removeEventListener('unhandledrejection', this.#unhandledRejectionHandler);
-        document.removeEventListener('visibilitychange', this.#visibilityHandler);
+        // Cleanup listeners
     }
 
     #redirectToDashboard() {
@@ -179,40 +81,16 @@ class VexorApp {
             window.location.href = '/dashboard.html';
         }, 2000);
     }
-
-    #log(...args) {
-        console.log('[Vexorion]', ...args);
-    }
 }
 
-const app = VexorApp.getInstance();
+// ===== EXPORT CLASS =====
+export { VexorApp };
+export { modalManager };
+export { toastManager };
+export { authManager };
+export { createFormHandler };
 
-function whenReady() {
-    return new Promise(resolve => {
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', resolve);
-        } else {
-            resolve();
-        }
-    });
-}
-
-whenReady().then(() => {
-    app.init().catch(error => {
-        console.error('[Vexorion] Failed to initialize:', error);
-    });
-});
-
-export { 
-    app,
-    modalManager as ModalManager,
-    toastManager as ToastManager,
-    authManager as AuthManager
-};
-
-window.__VEXOR = {
-    app,
-    authManager,
-    toastManager,
-    modalManager,
-};
+export * from './js/modules/ModalManager.js';
+export * from './js/modules/ToastManager.js';
+export * from './js/modules/AuthManager.js';
+export * from './js/modules/formhandler/index.js';
