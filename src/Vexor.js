@@ -5,7 +5,7 @@
 import { modalManager } from './js/modules/ModalManager.js';
 import { toastManager } from './js/modules/ToastManager.js';
 import { authManager } from './js/modules/AuthManager.js';
-import { createFormHandler } from './js/modules/FormHandler.js';
+import { createFormHandler } from './js/modules/FormHandler/index.js';
 
 class VexorApp {
     static #instance = null;
@@ -55,6 +55,7 @@ class VexorApp {
             return true;
         } catch (error) {
             console.error('[Vexorion] Init failed:', error);
+            toastManager.error('Failed to initialize app. Please refresh.');
             throw error;
         }
     }
@@ -62,6 +63,7 @@ class VexorApp {
     destroy() {
         if (this.#formHandler) {
             this.#formHandler.destroy();
+            this.#formHandler = null;
         }
         this.#removeGlobalListeners();
         this.#initialized = false;
@@ -75,6 +77,16 @@ class VexorApp {
 
     getElements() {
         return { ...this.#elements };
+    }
+
+    // --- DEBUG METHODS ---
+
+    getState() {
+        return {
+            initialized: this.#initialized,
+            elements: Object.keys(this.#elements).filter(key => this.#elements[key]),
+            formHandler: !!this.#formHandler,
+        };
     }
 
     // --- PRIVATE METHODS ---
@@ -91,28 +103,43 @@ class VexorApp {
             container: document.querySelector('.login-container')
         };
 
-        Object.entries(this.#elements).forEach(([key, value]) => {
-            if (!value) {
-                console.warn(`[Vexorion] Element "#${key}" not found`);
-            }
-        });
+        // Cek elemen yang hilang
+        const missing = Object.entries(this.#elements)
+            .filter(([key, value]) => !value)
+            .map(([key]) => key);
+
+        if (missing.length > 0) {
+            console.warn(`[Vexorion] Missing elements: ${missing.join(', ')}`);
+        }
     }
 
     async #loadInitialState() {
-        const isAuthenticated = await authManager.checkAuth();
-        const state = authManager.getState();
-        
-        if (isAuthenticated && state.user) {
-            this.#elements.email.value = state.user.email || '';
-            toastManager.success(`Welcome back, ${state.user.name || state.user.email}!`);
-            if (window.location.pathname === '/') {
-                this.#redirectToDashboard();
+        try {
+            const isAuthenticated = await authManager.checkAuth();
+            const state = authManager.getState();
+            
+            if (isAuthenticated && state.user) {
+                const emailInput = this.#elements.email;
+                if (emailInput) {
+                    emailInput.value = state.user.email || '';
+                }
+                toastManager.success(`Welcome back, ${state.user.name || state.user.email}!`);
+                
+                if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
+                    this.#redirectToDashboard();
+                }
             }
+        } catch (error) {
+            console.error('[Vexorion] Load initialState error:', error);
         }
     }
 
     #setupFormHandler() {
-        this.#formHandler = createFormHandler(this.#elements);
+        if (this.#elements.form) {
+            this.#formHandler = createFormHandler(this.#elements);
+        } else {
+            console.error('[Vexorion] Form element not found, cannot setup FormHandler');
+        }
     }
 
     #setupGlobalListeners() {
@@ -134,7 +161,7 @@ class VexorApp {
 
         this.#visibilityHandler = () => {
             if (document.hidden) {
-                this.#log('Page hidden - saving state');
+                this.#log('Page hidden');
             }
         };
         document.addEventListener('visibilitychange', this.#visibilityHandler);
@@ -158,7 +185,8 @@ class VexorApp {
     }
 }
 
-// Initialize app
+// --- Initialize App ---
+
 const app = VexorApp.getInstance();
 
 function whenReady() {
@@ -177,10 +205,19 @@ whenReady().then(() => {
     });
 });
 
-// Export
+// --- Exports ---
+
 export { 
     app,
     modalManager as ModalManager,
     toastManager as ToastManager,
     authManager as AuthManager
+};
+
+// Expose untuk debugging di console
+window.__VEXOR = {
+    app,
+    authManager,
+    toastManager,
+    modalManager,
 };
