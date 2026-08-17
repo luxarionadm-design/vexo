@@ -28,8 +28,6 @@ class VexorApp {
         return VexorApp.#instance;
     }
 
-    // --- PUBLIC METHODS ---
-
     async init() {
         if (this.#initialized) {
             return this.#initPromise;
@@ -52,6 +50,13 @@ class VexorApp {
             
             this.#initialized = true;
             this.#log('Vexorion App initialized');
+            
+            // Expose ModalManager ke window untuk HTML onclick
+            window.ModalManager = modalManager;
+            window.ToastManager = toastManager;
+            window.AuthManager = authManager;
+            console.log('[Vexorion] ✅ ModalManager exposed to window!');
+            
             return true;
         } catch (error) {
             console.error('[Vexorion] Init failed:', error);
@@ -79,8 +84,6 @@ class VexorApp {
         return { ...this.#elements };
     }
 
-    // --- DEBUG METHODS ---
-
     getState() {
         return {
             initialized: this.#initialized,
@@ -88,8 +91,6 @@ class VexorApp {
             formHandler: !!this.#formHandler,
         };
     }
-
-    // --- PRIVATE METHODS ---
 
     #cacheElements() {
         this.#elements = {
@@ -103,7 +104,6 @@ class VexorApp {
             container: document.querySelector('.login-container')
         };
 
-        // Cek elemen yang hilang
         const missing = Object.entries(this.#elements)
             .filter(([key, value]) => !value)
             .map(([key]) => key);
@@ -185,8 +185,6 @@ class VexorApp {
     }
 }
 
-// --- Initialize App ---
-
 const app = VexorApp.getInstance();
 
 function whenReady() {
@@ -205,8 +203,6 @@ whenReady().then(() => {
     });
 });
 
-// --- Exports ---
-
 export { 
     app,
     modalManager as ModalManager,
@@ -214,7 +210,6 @@ export {
     authManager as AuthManager
 };
 
-// Expose untuk debugging di console
 window.__VEXOR = {
     app,
     authManager,
