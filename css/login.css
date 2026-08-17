@@ -1,0 +1,96 @@
+/* ===== LOGIN PAGE ===== */
+
+#app {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: var(--color-bg);
+    padding: 20px;
+}
+
+.login-container {
+    background: var(--color-surface);
+    padding: 48px 40px 40px;
+    border-radius: 16px;
+    border: 1px solid var(--color-border);
+    max-width: 420px;
+    width: 100%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+}
+
+.login-header h1 {
+    color: var(--color-primary);
+    font-size: 32px;
+    margin-bottom: 4px;
+}
+
+.login-header .subtitle {
+    color: var(--color-text-secondary);
+    font-size: 14px;
+    margin-bottom: 32px;
+}
+
+.login-form .form-group {
+    margin-bottom: 18px;
+}
+
+.login-form .form-group .Label {
+    margin-bottom: 4px;
+}
+
+.login-form .form-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 16px 0 24px;
+    font-size: 13px;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.login-form .remember-me {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+}
+
+.login-form .remember-me input {
+    accent-color: var(--color-primary);
+    cursor: pointer;
+}
+
+.login-form .forgot-link {
+    color: var(--color-primary);
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.login-form .forgot-link:hover {
+    color: var(--color-text);
+    text-decoration: underline;
+}
+
+.signup-section {
+    text-align: center;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--color-border);
+    color: var(--color-text-secondary);
+    font-size: 14px;
+}
+
+.signup-section a {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.signup-section a:hover {
+    text-decoration: underline;
+    color: var(--color-text);
+}
