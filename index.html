@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vexorion · Streaming</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #0a0a0a;
+            background-image: url('assets/images/wallpaper.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            position: relative;
+            padding: 1.5rem;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            z-index: 0;
+        }
+
+        .login-container {
+            position: relative;
+            z-index: 1;
+            background: rgba(8, 8, 12, 0.88);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            padding: 48px 56px 36px;
+            border-radius: 32px;
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid rgba(255, 200, 50, 0.08);
+            box-shadow: 
+                0 40px 80px rgba(0, 0, 0, 0.8),
+                0 0 0 1px rgba(255, 200, 50, 0.04),
+                inset 0 1px 0 rgba(255, 255, 255, 0.03);
+            transition: all 0.3s ease;
+        }
+
+        .login-container::before {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            border-radius: 32px;
+            padding: 1px;
+            background: linear-gradient(135deg, rgba(245, 200, 66, 0.15), transparent 50%, rgba(245, 200, 66, 0.05));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+
+        .logo {
+            font-size: 32px;
+            font-weight: 700;
+            color: #f5c842;
+            letter-spacing: -0.3px;
+            margin-bottom: 4px;
+            text-shadow: 0 0 60px rgba(245, 200, 66, 0.06);
+        }
+
+        .logo-sub {
+            font-size: 10px;
+            font-weight: 300;
+            color: #666;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            margin-bottom: 22px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .logo-sub span {
+            color: #f5c842;
+            font-weight: 400;
+        }
+
+        .tagline {
+            color: #777;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 26px;
+            padding: 10px 14px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(4px);
+        }
+
+        .tagline strong {
+            color: #eee;
+            font-weight: 500;
+        }
+
+        .tagline .dot {
+            color: #f5c842;
+            margin: 0 4px;
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px 18px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            color: #e8e8e8;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input::placeholder {
+            color: #555;
+        }
+
+        .form-group input:focus {
+            background: rgba(255, 255, 255, 0.07);
+            border-color: rgba(245, 200, 66, 0.2);
+            box-shadow: 0 0 30px rgba(245, 200, 66, 0.03);
+        }
+
+        .signin-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #f5c842, #dba632);
+            color: #0a0a0a;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: all 0.3s ease;
+            letter-spacing: 0.3px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .signin-btn::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), transparent);
+            pointer-events: none;
+        }
+
+        .signin-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 40px rgba(245, 200, 66, 0.15);
+        }
+
+        .signin-btn:active {
+            transform: scale(0.98);
+        }
+
+        .options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 16px 0 18px;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .options label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            color: #888;
+            transition: color 0.2s;
+        }
+
+        .options label:hover {
+            color: #aaa;
+        }
+
+        .options label input[type="checkbox"] {
+            accent-color: #f5c842;
+            width: 15px;
+            height: 15px;
+            background: transparent;
+            cursor: pointer;
+        }
+
+        .options a {
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            transition: color 0.2s;
+        }
+
+        .options a:hover {
+            color: #f5c842;
+        }
+
+        .signup {
+            color: #555;
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        .signup a {
+            color: #f5c842;
+            text-decoration: none;
+            font-weight: 500;
+            transition: opacity 0.2s;
+        }
+
+        .signup a:hover {
+            opacity: 0.8;
+            text-decoration: underline;
+        }
+
+        .footer-text {
+            color: #3a3a3a;
+            font-size: 10px;
+            margin-top: 16px;
+            line-height: 1.6;
+            letter-spacing: 0.5px;
+            text-align: center;
+        }
+
+        .footer-text span {
+            color: #f5c842;
+            opacity: 0.25;
+        }
+
+        .stream-badge {
+            display: inline-block;
+            font-size: 8px;
+            color: #f5c842;
+            background: rgba(245, 200, 66, 0.06);
+            padding: 3px 12px;
+            border-radius: 20px;
+            letter-spacing: 1.5px;
+            margin-top: 14px;
+            border: 1px solid rgba(245, 200, 66, 0.06);
+        }
+
+        .login-container::after {
+            content: '';
+            position: absolute;
+            top: -60px;
+            right: -60px;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(245, 200, 66, 0.03), transparent 70%);
+            pointer-events: none;
+            border-radius: 50%;
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 0.8rem;
+            }
+            .login-container {
+                padding: 28px 18px 24px;
+                border-radius: 24px;
+                max-width: 100%;
+            }
+            .logo {
+                font-size: 26px;
+            }
+            .tagline {
+                font-size: 9px;
+                padding: 8px 10px;
+            }
+            .form-group input {
+                padding: 12px 14px;
+                font-size: 13px;
+            }
+            .signin-btn {
+                padding: 13px;
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .login-container {
+                padding: 20px 14px 18px;
+                border-radius: 18px;
+            }
+            .logo {
+                font-size: 22px;
+            }
+            .options {
+                font-size: 11px;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <!-- Logo: DLSS JIM & AN -->
+        <div class="logo">DLSS <span style="font-weight:300;color:#888;font-size:16px;letter-spacing:0.5px;">JIM & AN</span></div>
+        <div class="logo-sub">✦ <span>Vxrn</span> ✦</div>
+
+        <!-- Tagline: STREAM THE FUTURE · WATCH WITHOUT LIMITS -->
+        <div class="tagline">
+            <strong>STREAM THE FUTURE</strong> 
+            <span class="dot">·</span> WATCH WITHOUT LIMITS
+        </div>
+
+        <!-- Form -->
+        <form id="loginForm">
+            <div class="form-group">
+                <input type="email" placeholder="Username@gmail" value="Username@gmail" />
+            </div>
+            <div class="form-group">
+                <input type="password" placeholder="Password" value="Password" />
+            </div>
+
+            <button type="submit" class="signin-btn">Sign in</button>
+
+            <div class="options">
+                <label>
+                    <input type="checkbox" checked /> Remember me
+                </label>
+                <a href="#">Forgot your password?</a>
+            </div>
+        </form>
+
+        <div class="signup">
+            New to Vexorion? <a href="#">Sign up now.</a>
+        </div>
+
+        <div class="footer-text">
+            <span>●</span> streaming in 4K · UHD · HDR <span>●</span>
+        </div>
+
+        <div style="text-align:center;">
+            <span class="stream-badge">⚡ LIVE · 1080p</span>
+        </div>
+    </div>
+</body>
+</html>
