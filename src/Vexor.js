@@ -5,7 +5,7 @@
 import { modalManager } from './js/modules/ModalManager.js';
 import { toastManager } from './js/modules/ToastManager.js';
 import { authManager } from './js/modules/AuthManager.js';
-import { createFormHandler } from './js/modules/FormHandler/index.js';
+import { createFormHandler } from './js/modules/formhandler/index.js';
 
 class VexorApp {
     static #instance = null;
